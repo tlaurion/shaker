@@ -1,0 +1,32 @@
+This is a caching proxy, based on apt-cacher-ng.  
+
+Config files are included, which will work out of the box for Debian,Ubuntu,Arch, and Fedora.  
+The cache and log directories are bind-mounted in /rw in the cacher qube.
+
+Copy directory to /srv/salt, then run:  
+qubesctl state.apply cacher-whonix.create
+qubesctl --skip-dom0 --targets=whonix-gw-16 state.apply cacher.install  
+qubesctl --skip-dom0 --targets=sys-whonix state.apply cacher.configure
+
+To automatically use the proxy run:  
+qubesctl state.apply cacher-whonix.use  
+This will configure /etc/qubes/policy.d/30-user.policy to use the caching proxy by default.
+
+apt-cacher-ng will cache HTTPS requests if you change https:// to http://HTTPS/// in repo source lists.
+To configure all templates to use the proxy in this way, run:  
+qubesctl --skip-dom0 --templates state.apply cacher-whonix.change_templates  
+Or target individual templates, as you wish:
+qubesctl --skip-dom0 --targets=TEMPLATE1,TEMPLATE2  state.apply cacher-whonix.change_templates  
+
+
+N.B
+apt-cacher-ng works well for Debian,Ubuntu,and Arch.  
+It works reasonably well for Fedora, but may require further tweaking of the apt-cacher-ng control file, and the fedora_mirrors lists.
+
+To restore a template to the default state, a state is provided, restore_templates.sls.
+Apply it like this:
+qubesctl --skip-dom0 --targets=TEMPLATE1,TEMPLATE2  state.apply cacher-whonix.restore_templates  
+
+The qrexec policy file at  /etc/qubes/policy.d/30-user.policy should be edited so that these templates use the default system proxy.
+
+
